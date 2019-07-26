@@ -1,6 +1,6 @@
 let config = require('./config.json');
 const fs = require('fmng');
-const updateConfig = () => { fs.write('./config.json', JSON.stringify(config)); }
+const updateConfig = () => { fs.write('./config.json', JSON.stringify(config, null, 4)); }
 const gawk = require('gawk').gawk;
 
 class Locdb {
@@ -26,7 +26,7 @@ class Locdb {
         this.updater = setInterval(() => {
             for (var i = 0; i < this.updated.length; i++) {
                 let db = this.updated[i];
-                fs.write(__dirname + '/files/' + db + '.json', JSON.stringify(this.db[db]));
+                fs.write(__dirname + '/files/' + db + '.json', JSON.stringify(this.db[db], null, 4));
             }
             this.updated = [];
         }, config.updateInterval);
@@ -40,7 +40,7 @@ class Locdb {
         this.updater = setInterval(() => {
             for (var i = 0; i < this.updated.length; i++) {
                 let db = this.updated[i];
-                fs.write(__dirname + '/files/' + db + '.json', JSON.stringify(this.db[db]));
+                fs.write(__dirname + '/files/' + db + '.json', JSON.stringify(this.db[db], null, 4));
             }
             this.updated = [];
         }, config.updateInterval);
@@ -77,6 +77,9 @@ class Locdb {
     purge(path) {
         if (this.exists(path)) {
             fs.remove(__dirname + '/files/' + path + '.json');
+            this.db[path] = undefined;
+            config.list.splice(config.list.indexOf(path), 1)
+            updateConfig();
         } else {
             console.log('E: locdb.purge() ~> DB "' + path + '" does not exist, aborted deletion!');
         }

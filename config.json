@@ -1,1 +1,6 @@
-{"updateInterval":500,"list":["example"]}
+{
+    "updateInterval": 500,
+    "list": [
+        "example"
+    ]
+}

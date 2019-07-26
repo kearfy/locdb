@@ -1,0 +1,1 @@
+This file has been put here so the logs folder would sync up to Github.

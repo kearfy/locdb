@@ -1,0 +1,26 @@
+{
+  "name": "jdb",
+  "version": "1.0.0",
+  "description": "Json db for NodeJS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kearfy/jdb.git"
+  },
+  "keywords": [
+    "JSON"
+  ],
+  "author": "Micha de Vries",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/kearfy/jdb/issues"
+  },
+  "homepage": "https://github.com/kearfy/jdb#readme",
+  "dependencies": {
+    "fmng": "^1.0.2",
+    "gawk": "^4.6.4"
+  }
+}

@@ -1,24 +1,23 @@
 {
-  "name": "jdb",
+  "name": "locdb",
   "version": "1.0.0",
-  "description": "Json db for NodeJS",
+  "description": " local Json db for NodeJS",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kearfy/jdb.git"
+    "url": "git+https://github.com/kearfy/locdb.git"
   },
   "keywords": [
-    "JSON"
+    "JSON",
+    "LOCAL",
+    "DB"
   ],
   "author": "Micha de Vries",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/kearfy/jdb/issues"
+    "url": "https://github.com/kearfy/locdb/issues"
   },
-  "homepage": "https://github.com/kearfy/jdb#readme",
+  "homepage": "https://github.com/kearfy/locdb#readme",
   "dependencies": {
     "fmng": "^1.0.2",
     "gawk": "^4.6.4"

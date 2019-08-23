@@ -15,13 +15,14 @@ function log(msg) {
         var time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 
         try {
-            fs.appendFileSync(__dirname + '/logs/' + today + '.fmng.log', '[' + time + '] ~ ' + msg + "\n");
+            if (!fs.exists(__dirname + '/logs/' + today + '.locdb.log')) { fs.mk(__dirname + '/logs/' + today + '.locdb.log'); }
+            fs.append(__dirname + '/logs/' + today + '.locdb.log', '[' + time + '] ~ ' + msg + "\n");
         } catch(e) {
-            console.log('JDB ERROR: COULD NOT WRITE TO LOG! LOGGING ERROR(S).', e);
+            console.log('FMNG ERROR (log): COULD NOT WRITE TO LOG! LOGGING ERROR(S).', e);
             return false;
         }
     } else {
-        console.log('JDB ERROR: LOG MESSAGE MUST BE GIVEN IN!');
+        console.log('FMNG ERROR (log): LOG MESSAGE MUST BE GIVEN IN!');
         return false;
     }
 

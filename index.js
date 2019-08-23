@@ -1,7 +1,9 @@
-let config = require('./config.json');
 const fs = require('fmng');
-const updateConfig = () => { fs.write('./config.json', JSON.stringify(config, null, 4)); }
 const gawk = require('gawk').gawk;
+
+if (!fs.exists(__dirname + '/config.json')) fs.mkfile(__dirname + '/config.json', fs.read(__dirname + '/config.default.json'));
+let config = require(__dirname + '/config.json');
+const updateConfig = () => { fs.write(__dirname + '/config.json', JSON.stringify(config, null, 4)); }
 
 class Locdb {
     constructor() {

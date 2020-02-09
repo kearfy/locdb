@@ -1,17 +1,22 @@
 const fs = require('fmng');
 const gawk = require('gawk').gawk;
 
-if (!fs.exists(__dirname + '/config.json')) fs.mkfile(__dirname + '/config.json', fs.read(__dirname + '/config.default.json'));
-let config = require(__dirname + '/config.json');
-const updateConfig = () => { fs.write(__dirname + '/config.json', JSON.stringify(config, null, 4)); }
-
 class Locdb {
-    constructor() {
+    constructor(dir) {
+        if (!fs.exists(dir)) fs.mkdir(dir);
+        if (!fs.exists(dir + '/config.json')) fs.mkfile(dir + '/config.json', fs.read(__dirname + '/config.default.json'));
+        if (!fs.exists(dir + '/files')) fs.mkdir(dir + '/files');
+        if (!fs.exists(dir + '/logs')) fs.mkdir(dir + '/logs');
+
+        this.dir = dir;
+        this.config = require(this.dir + '/config.json');
+        this.updateConfig = () => { fs.write(dir + '/config.json', JSON.stringify(this.config, null, 4)); }
         this.db = {};
         this.updated = [];
-        config.list.forEach((db) => {
-            if (fs.exists(__dirname + '/files/' + db + '.json')) {
-                this.db[db] = gawk(require(__dirname + '/files/' + db + '.json'));
+
+        this.config.list.forEach((db) => {
+            if (fs.exists(this.dir + '/files/' + db + '.json')) {
+                this.db[db] = gawk(require(this.dir + '/files/' + db + '.json'));
                 gawk.watch(this.db[db], (newval, oldval) => {
                     this.updated.push(db);
                 });
@@ -20,70 +25,70 @@ class Locdb {
                 console.log('N: locdb.constructor() (initialization) ~> Automatically creating a new file, but data is gone!');
                 this.log('E: locdb.constructor() (initialization) ~> Database "' + db + '" was listed in configuration but its file seems to be missing!');
                 this.log('N: locdb.constructor() (initialization) ~> Automatically creating a new file, but data is gone!');
-                fs.create(__dirname + '/files/' + db + '.json');
-                fs.write(__dirname + '/files/' + db + '.json', '{}');
+                fs.mkfile(this.dir + '/files/' + db + '.json', '{}');
             }
         });
 
         this.updater = setInterval(() => {
             for (var i = 0; i < this.updated.length; i++) {
                 let db = this.updated[i];
-                fs.write(__dirname + '/files/' + db + '.json', JSON.stringify(this.db[db], null, 4));
+                fs.write(this.dir + '/files/' + db + '.json', JSON.stringify(this.db[db], null, 4));
             }
+
             this.updated = [];
-        }, config.updateInterval);
+        }, this.config.updateInterval);
     }
 
     setUpdateInterval(interval) {
-        config.updateInterval = interval;
-        updateConfig();
+        this.config.updateInterval = interval;
+        this.updateConfig();
 
         clearInterval(this.updater);
         this.updater = setInterval(() => {
             for (var i = 0; i < this.updated.length; i++) {
                 let db = this.updated[i];
-                fs.write(__dirname + '/files/' + db + '.json', JSON.stringify(this.db[db], null, 4));
+                fs.write(this.dir + '/files/' + db + '.json', JSON.stringify(this.db[db], null, 4));
             }
             this.updated = [];
-        }, config.updateInterval);
+        }, this.config.updateInterval);
     }
 
     exists(db, file = false) {
         if (file) {
-            return fs.exists(__dirname + '/files/' + db + '.json');
+            return fs.exists(this.dir + '/files/' + db + '.json');
         } else {
-            return config.list.includes(db);
+            return this.config.list.includes(db);
         }
     }
 
-    new(db) {
+    register(db) {
         if (!this.exists(db, true)) {
-            fs.create(__dirname + '/files/' + db + '.json');
+            fs.create(this.dir + '/files/' + db + '.json');
         }
 
-        if (fs.read(__dirname + '/files/' + db + '.json') === '') {
-            fs.write(__dirname + '/files/' + db + '.json', '{}');
+        if (fs.read(this.dir + '/files/' + db + '.json') === '') {
+            fs.write(this.dir + '/files/' + db + '.json', '{}');
         }
 
         if (!this.exists(db)) {
-            config.list.push(db);
-            updateConfig();
+            this.config.list.push(db);
+            this.updateConfig();
         }
 
-        this.db[db] = gawk(require(__dirname + '/files/' + db + '.json'));
+        this.db[db] = gawk(require(this.dir + '/files/' + db + '.json'));
         gawk.watch(this.db[db], (newval, oldval) => {
             this.updated.push(db);
         });
     }
 
-    purge(path) {
-        if (this.exists(path)) {
-            fs.remove(__dirname + '/files/' + path + '.json');
-            this.db[path] = undefined;
-            config.list.splice(config.list.indexOf(path), 1)
-            updateConfig();
+    purge(db) {
+        if (this.exists(db)) {
+            fs.remove(this.dir + '/files/' + db + '.json');
+            delete this.db[db];
+            this.config.list.splice(this.config.list.indexOf(db), 1)
+            this.updateConfig();
         } else {
-            console.log('E: locdb.purge() ~> DB "' + path + '" does not exist, aborted deletion!');
+            console.log('E: locdb.purge() ~> DB "' + db + '" does not exist, aborted deletion!');
         }
     }
 
@@ -94,14 +99,14 @@ class Locdb {
             var time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 
             try {
-                if (!fs.exists(__dirname + '/logs/' + today + '.locdb.log')) { fs.mk(__dirname + '/logs/' + today + '.locdb.log'); }
-                fs.append(__dirname + '/logs/' + today + '.locdb.log', '[' + time + '] ~ ' + msg + "\n");
+                if (!fs.exists(this.dir + '/logs/' + today + '.locdb.log')) { fs.mkfile(this.dir + '/logs/' + today + '.locdb.log'); }
+                fs.append(this.dir + '/logs/' + today + '.locdb.log', '[' + time + '] ~ ' + msg + "\n");
             } catch(e) {
-                console.log('LOCDB ERROR: COULD NOT WRITE TO LOG! LOGGING ERROR(S).', e);
+                console.error('LOCDB ERROR: COULD NOT WRITE TO LOG! LOGGING ERROR(S).', e);
                 return false;
             }
         } else {
-            console.log('LOCDB ERROR: LOG MESSAGE MUST BE GIVEN IN!');
+            console.error('LOCDB ERROR: LOG MESSAGE MUST BE GIVEN IN!');
             return false;
         }
 
@@ -109,4 +114,4 @@ class Locdb {
     }
 }
 
-module.exports = new Locdb();
+module.exports = Locdb;

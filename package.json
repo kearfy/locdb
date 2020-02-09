@@ -1,6 +1,6 @@
 {
   "name": "locdb",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": " local Json db for NodeJS",
   "main": "index.js",
   "repository": {
@@ -10,7 +10,8 @@
   "keywords": [
     "JSON",
     "LOCAL",
-    "DB"
+    "DB",
+    "INMEMORY"
   ],
   "author": "Micha de Vries",
   "license": "MPL-2.0",
